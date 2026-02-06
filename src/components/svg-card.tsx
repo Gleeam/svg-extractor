@@ -60,7 +60,7 @@ function SvgPreview({ content, className = "" }: { content: string; className?: 
         }}
       />
       <div
-        className="relative max-w-full max-h-full [&_svg]:max-w-full [&_svg]:max-h-full [&_svg]:w-auto [&_svg]:h-auto"
+        className="relative w-full h-full [&_svg]:max-w-full [&_svg]:max-h-full [&_svg]:w-full [&_svg]:h-auto [&_svg]:mx-auto"
         style={{ color: "#1a1a1a" }}
         dangerouslySetInnerHTML={{ __html: content }}
       />

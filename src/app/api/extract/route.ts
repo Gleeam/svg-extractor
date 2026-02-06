@@ -224,14 +224,38 @@ export async function POST(request: NextRequest) {
         return parts;
       }
 
+      // Ensure SVG has width/height so it renders at a real size standalone
+      function ensureDimensions(el: SVGSVGElement) {
+        if (el.getAttribute("width") && el.getAttribute("height")) return;
+        const viewBox = el.getAttribute("viewBox");
+        if (viewBox) {
+          const vbParts = viewBox.split(/[\s,]+/);
+          if (vbParts.length === 4) {
+            if (!el.getAttribute("width")) el.setAttribute("width", vbParts[2]);
+            if (!el.getAttribute("height")) el.setAttribute("height", vbParts[3]);
+            return;
+          }
+        }
+        const bbox = el.getBoundingClientRect();
+        if (bbox.width > 0 && bbox.height > 0) {
+          if (!el.getAttribute("width")) el.setAttribute("width", String(Math.round(bbox.width)));
+          if (!el.getAttribute("height")) el.setAttribute("height", String(Math.round(bbox.height)));
+        }
+      }
+
       function serializeSvg(el: SVGSVGElement, resolvedColor: string): string {
-        // Temporarily inline computed styles on the original, serialize, then restore
         const restored = inlineComputedStyles(el);
+        const origWidth = el.getAttribute("width");
+        const origHeight = el.getAttribute("height");
+        ensureDimensions(el);
         if (!el.getAttribute("xmlns")) {
           el.setAttribute("xmlns", "http://www.w3.org/2000/svg");
         }
         const raw = new XMLSerializer().serializeToString(el);
+        // Restore original DOM state
         restoreInlinedStyles(restored);
+        if (origWidth === null) el.removeAttribute("width"); else el.setAttribute("width", origWidth);
+        if (origHeight === null) el.removeAttribute("height"); else el.setAttribute("height", origHeight);
         return resolveCurrentColor(raw, resolvedColor);
       }
 
