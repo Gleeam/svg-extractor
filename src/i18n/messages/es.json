@@ -1,0 +1,47 @@
+{
+  "meta": {
+    "title": "SVG Extractor - Extraer y Descargar SVGs de Cualquier Sitio Web",
+    "description": "Herramienta online gratuita para extraer, previsualizar y descargar todos los iconos y graficos SVG de cualquier sitio web. Descarga individual o como archivo ZIP.",
+    "keywords": "extractor svg, descargar svg, extraer svg de sitio web, svg downloader, iconos svg, scraper svg"
+  },
+  "hero": {
+    "title": "Extraer SVGs de cualquier sitio web",
+    "subtitle": "Pega una URL y extrae al instante todos los graficos SVG. Previsualizalos, descargalos individualmente o todos a la vez.",
+    "placeholder": "https://ejemplo.com",
+    "button": "Extraer SVGs",
+    "loading": "Analizando la pagina..."
+  },
+  "results": {
+    "found": "{count} SVGs encontrados",
+    "foundSingular": "1 SVG encontrado",
+    "none": "No se encontraron SVGs en esta pagina",
+    "noneSub": "Prueba con otra URL o verifica que la pagina utilice graficos SVG.",
+    "downloadAll": "Descargar todo como ZIP",
+    "download": "Descargar",
+    "copy": "Copiar SVG",
+    "copied": "Copiado!",
+    "source": "Fuente",
+    "inline": "En linea",
+    "img": "Imagen",
+    "background": "Fondo",
+    "object": "Objeto",
+    "symbol": "Simbolo",
+    "dimensions": "{w} x {h}",
+    "preview": "Vista previa"
+  },
+  "footer": {
+    "built": "Creado por",
+    "description": "Herramienta gratuita y de codigo abierto para extraccion de SVG"
+  },
+  "errors": {
+    "invalid_url": "Por favor, introduce una URL valida",
+    "fetch_failed": "No se pudo obtener la pagina. Verifica la URL e intentalo de nuevo.",
+    "generic": "Algo salio mal. Por favor, intentalo de nuevo."
+  },
+  "language": {
+    "label": "Idioma",
+    "en": "Ingles",
+    "fr": "Frances",
+    "es": "Espanol"
+  }
+}

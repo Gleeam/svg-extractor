@@ -1,26 +1,174 @@
 @import "tailwindcss";
+@import "tw-animate-css";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
+@custom-variant dark (&:is(.dark *));
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --color-surface: var(--surface);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-accent-soft: var(--accent-soft);
+  --color-destructive: var(--destructive);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-gradient-start: var(--gradient-start);
+  --color-gradient-end: var(--gradient-end);
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+  --radius-2xl: calc(var(--radius) + 8px);
+  --radius-3xl: calc(var(--radius) + 12px);
+  --radius-4xl: calc(var(--radius) + 16px);
+  --font-sans: var(--font-inter), system-ui, sans-serif;
+  --font-heading: var(--font-dm-sans), system-ui, sans-serif;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+/* ===== LIGHT MODE (Default) ===== */
+:root {
+  --radius: 0.625rem;
+  --background: #FAFAFA;
+  --foreground: #1A1A1A;
+  --surface: #FFFFFF;
+  --card: #FFFFFF;
+  --card-foreground: #1A1A1A;
+  --popover: #FFFFFF;
+  --popover-foreground: #1A1A1A;
+  --primary: #D4884A;
+  --primary-foreground: #FFFFFF;
+  --accent: #D4884A;
+  --accent-foreground: #FFFFFF;
+  --accent-soft: #E5A066;
+  --secondary: #FFF5ED;
+  --secondary-foreground: #1A1A1A;
+  --muted: #FFF5ED;
+  --muted-foreground: #6B6B6B;
+  --destructive: #DC2626;
+  --border: rgba(0, 0, 0, 0.08);
+  --input: rgba(0, 0, 0, 0.08);
+  --ring: #D4884A;
+  --gradient-start: #ffd9b9;
+  --gradient-end: #f2c5d8;
+}
+
+/* ===== DARK MODE ===== */
+.dark {
+  --background: #050608;
+  --foreground: #F5F5F6;
+  --surface: #15171A;
+  --card: #15171A;
+  --card-foreground: #F5F5F6;
+  --popover: #15171A;
+  --popover-foreground: #F5F5F6;
+  --primary: #FFC891;
+  --primary-foreground: #050608;
+  --accent: #FFC891;
+  --accent-foreground: #050608;
+  --accent-soft: #FFD4A8;
+  --secondary: #1E2024;
+  --secondary-foreground: #F5F5F6;
+  --muted: #1E2024;
+  --muted-foreground: #7A8088;
+  --destructive: #7A2E3A;
+  --border: rgba(255, 255, 255, 0.08);
+  --input: rgba(255, 255, 255, 0.08);
+  --ring: #FFC891;
+  --gradient-start: #ffd9b9;
+  --gradient-end: #f2c5d8;
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    @apply bg-background text-foreground antialiased;
+    transition: background-color 0.3s ease, color 0.3s ease;
   }
 }
 
-body {
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
   background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--muted-foreground);
+  border-radius: 4px;
+  opacity: 0.5;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--foreground);
+}
+
+::selection {
+  background: var(--accent);
+  color: var(--accent-foreground);
+}
+
+.gradient-text {
+  background: linear-gradient(135deg, var(--foreground) 0%, var(--accent) 50%, var(--gradient-end) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.gradient-accent {
+  background: linear-gradient(135deg, var(--accent) 0%, var(--gradient-end) 100%);
+}
+
+.gradient-border {
+  position: relative;
+}
+
+.gradient-border::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  padding: 1px;
+  background: linear-gradient(135deg, var(--accent), var(--gradient-end));
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  pointer-events: none;
+}
+
+.glow {
+  box-shadow: 0 0 40px -10px var(--accent);
+}
+
+.glow-soft {
+  box-shadow: 0 0 60px -20px var(--gradient-end);
+}
+
+.font-heading {
+  font-family: var(--font-heading), system-ui, sans-serif;
+  font-weight: 500;
+  letter-spacing: -0.02em;
 }
