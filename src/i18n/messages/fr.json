@@ -27,7 +27,8 @@
     "object": "Objet",
     "symbol": "Symbole",
     "dimensions": "{w} x {h}",
-    "preview": "Apercu"
+    "preview": "Apercu",
+    "parts": "{count} parties individuelles"
   },
   "footer": {
     "built": "Cree par",

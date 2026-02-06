@@ -27,7 +27,8 @@
     "object": "Object",
     "symbol": "Symbol",
     "dimensions": "{w} x {h}",
-    "preview": "Preview"
+    "preview": "Preview",
+    "parts": "{count} individual parts"
   },
   "footer": {
     "built": "Built by",

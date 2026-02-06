@@ -11,6 +11,13 @@ import { LanguageSwitcher } from "@/components/language-switcher";
 import { SvgCard } from "@/components/svg-card";
 import { LoadingAnimation } from "@/components/loading-animation";
 
+interface SvgPart {
+  id: string;
+  content: string;
+  tag: string;
+  label: string;
+}
+
 interface ExtractedSVG {
   id: string;
   content: string;
@@ -18,6 +25,7 @@ interface ExtractedSVG {
   label: string;
   width: number | null;
   height: number | null;
+  parts: SvgPart[];
 }
 
 export function SvgExtractor() {

@@ -3,6 +3,13 @@ import { chromium } from "playwright";
 
 export const maxDuration = 60;
 
+interface SvgPart {
+  id: string;
+  content: string;
+  tag: string;
+  label: string;
+}
+
 interface ExtractedSVG {
   id: string;
   content: string;
@@ -10,6 +17,7 @@ interface ExtractedSVG {
   label: string;
   width: number | null;
   height: number | null;
+  parts: SvgPart[];
 }
 
 export async function POST(request: NextRequest) {
@@ -22,7 +30,6 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "URL is required" }, { status: 400 });
     }
 
-    // Validate URL format
     let parsedUrl: URL;
     try {
       parsedUrl = new URL(url);
@@ -45,15 +52,19 @@ export async function POST(request: NextRequest) {
       timeout: 30000,
     });
 
-    // Wait a bit for lazy-loaded content
     await page.waitForTimeout(1500);
 
     const svgs: ExtractedSVG[] = await page.evaluate(() => {
       const results: ExtractedSVG[] = [];
       let counter = 0;
+      let partCounter = 0;
 
       function generateId() {
         return `svg-${++counter}`;
+      }
+
+      function generatePartId() {
+        return `part-${++partCounter}`;
       }
 
       function getSvgDimensions(el: SVGSVGElement) {
@@ -90,25 +101,152 @@ export async function POST(request: NextRequest) {
         );
       }
 
-      function serializeSvg(el: SVGSVGElement): string {
-        const clone = el.cloneNode(true) as SVGSVGElement;
-        // Ensure xmlns
-        if (!clone.getAttribute("xmlns")) {
-          clone.setAttribute("xmlns", "http://www.w3.org/2000/svg");
+      function rgbToHex(rgb: string): string {
+        const match = rgb.match(/\d+/g);
+        if (!match || match.length < 3) return rgb;
+        const [r, g, b] = match.map(Number);
+        return "#" + ((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1);
+      }
+
+      function getResolvedColor(el: Element): string {
+        const computed = window.getComputedStyle(el);
+        const color = computed.color || "rgb(0,0,0)";
+        return rgbToHex(color);
+      }
+
+      function resolveCurrentColor(svgString: string, color: string): string {
+        return svgString.replace(/currentColor/gi, color);
+      }
+
+      // Inline computed fill/stroke on elements that rely on page CSS.
+      // This makes the SVG self-contained when copied standalone.
+      const VISUAL_PROPS = ["fill", "stroke"] as const;
+
+      function inlineComputedStyles(root: Element): Array<{ el: Element; prop: string }> {
+        const restored: Array<{ el: Element; prop: string }> = [];
+        const selector = "path, circle, rect, line, polygon, polyline, ellipse, text, use, g";
+        const els = root.matches?.(selector) ? [root, ...root.querySelectorAll(selector)] : root.querySelectorAll(selector);
+
+        els.forEach((el) => {
+          const computed = window.getComputedStyle(el);
+          for (const prop of VISUAL_PROPS) {
+            // Skip if already has an explicit attribute or inline style
+            if (el.hasAttribute(prop)) continue;
+            if ((el as HTMLElement).style?.getPropertyValue(prop)) continue;
+
+            const val = computed.getPropertyValue(prop);
+            if (!val || val === "none" || val === "") continue;
+
+            // Convert rgb(...) to hex for cleaner output
+            const resolved = val.startsWith("rgb") ? rgbToHex(val) : val;
+            el.setAttribute(prop, resolved);
+            restored.push({ el, prop });
+          }
+        });
+
+        return restored;
+      }
+
+      function restoreInlinedStyles(restored: Array<{ el: Element; prop: string }>) {
+        for (const { el, prop } of restored) {
+          el.removeAttribute(prop);
         }
-        return new XMLSerializer().serializeToString(clone);
+      }
+
+      function getViewBoxOrFallback(svg: SVGSVGElement): string | null {
+        const vb = svg.getAttribute("viewBox");
+        if (vb) return vb;
+        const w = svg.getAttribute("width");
+        const h = svg.getAttribute("height");
+        if (w && h) return `0 0 ${parseFloat(w)} ${parseFloat(h)}`;
+        const bbox = svg.getBBox();
+        if (bbox.width > 0 && bbox.height > 0) {
+          return `${bbox.x} ${bbox.y} ${bbox.width} ${bbox.height}`;
+        }
+        return null;
+      }
+
+      // Collect defs from the parent SVG (gradients, clipPaths, filters, etc.)
+      function collectDefs(svg: SVGSVGElement): string {
+        const defsEl = svg.querySelector("defs");
+        if (!defsEl) return "";
+        return new XMLSerializer().serializeToString(defsEl);
+      }
+
+      function wrapInSvg(innerHTML: string, viewBox: string | null, defs: string): string {
+        const vbAttr = viewBox ? ` viewBox="${viewBox}"` : "";
+        return `<svg xmlns="http://www.w3.org/2000/svg"${vbAttr}>${defs}${innerHTML}</svg>`;
+      }
+
+      // Shape tags that represent meaningful visual elements
+      const SHAPE_TAGS = new Set([
+        "path", "circle", "rect", "line", "polygon",
+        "polyline", "ellipse", "g", "use", "text", "image",
+      ]);
+
+      function extractParts(svg: SVGSVGElement, resolvedColor: string): SvgPart[] {
+        const parts: SvgPart[] = [];
+        const viewBox = getViewBoxOrFallback(svg);
+        const defs = collectDefs(svg);
+
+        // Only look at direct children of the SVG (top-level shapes/groups)
+        const children = Array.from(svg.children);
+
+        // Skip if there's only 1 meaningful child - no point showing parts
+        const meaningfulChildren = children.filter(
+          (c) => SHAPE_TAGS.has(c.tagName.toLowerCase())
+        );
+        if (meaningfulChildren.length <= 1) return [];
+
+        for (const child of meaningfulChildren) {
+          const tag = child.tagName.toLowerCase();
+          // Inline computed styles on this child subtree before serializing
+          const childRestored = inlineComputedStyles(child);
+          const serialized = new XMLSerializer().serializeToString(child);
+          restoreInlinedStyles(childRestored);
+          const resolved = resolveCurrentColor(serialized, resolvedColor);
+          const content = wrapInSvg(resolved, viewBox, defs);
+
+          const label =
+            child.getAttribute("id") ||
+            child.getAttribute("aria-label") ||
+            child.getAttribute("class")?.split(" ")[0] ||
+            tag;
+
+          parts.push({
+            id: generatePartId(),
+            content,
+            tag,
+            label,
+          });
+        }
+
+        return parts;
+      }
+
+      function serializeSvg(el: SVGSVGElement, resolvedColor: string): string {
+        // Temporarily inline computed styles on the original, serialize, then restore
+        const restored = inlineComputedStyles(el);
+        if (!el.getAttribute("xmlns")) {
+          el.setAttribute("xmlns", "http://www.w3.org/2000/svg");
+        }
+        const raw = new XMLSerializer().serializeToString(el);
+        restoreInlinedStyles(restored);
+        return resolveCurrentColor(raw, resolvedColor);
       }
 
       // 1. Inline <svg> elements
       document.querySelectorAll("svg").forEach((svg) => {
-        // Skip tiny or hidden SVGs (likely icons used for spacing)
         const bbox = svg.getBoundingClientRect();
         if (bbox.width < 1 && bbox.height < 1) return;
 
-        const content = serializeSvg(svg);
-        if (content.length < 20) return; // Skip empty SVGs
+        const resolvedColor = getResolvedColor(svg);
+        const content = serializeSvg(svg, resolvedColor);
+        if (content.length < 20) return;
 
         const dims = getSvgDimensions(svg);
+        const parts = extractParts(svg, resolvedColor);
+
         results.push({
           id: generateId(),
           content,
@@ -116,6 +254,7 @@ export async function POST(request: NextRequest) {
           label: getLabel(svg) || `Inline SVG ${counter}`,
           width: dims.width || Math.round(bbox.width) || null,
           height: dims.height || Math.round(bbox.height) || null,
+          parts,
         });
       });
 
@@ -126,11 +265,12 @@ export async function POST(request: NextRequest) {
 
         results.push({
           id: generateId(),
-          content: "", // Will be fetched separately
+          content: "",
           source: "img",
           label: img.getAttribute("alt") || getLabel(img) || `Image SVG ${counter}`,
           width: (img as HTMLImageElement).naturalWidth || null,
           height: (img as HTMLImageElement).naturalHeight || null,
+          parts: [],
         });
       });
 
@@ -139,7 +279,6 @@ export async function POST(request: NextRequest) {
         const viewBox = symbol.getAttribute("viewBox");
         const id = symbol.getAttribute("id") || "";
 
-        // Create a standalone SVG from the symbol
         const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
         svg.setAttribute("xmlns", "http://www.w3.org/2000/svg");
         if (viewBox) svg.setAttribute("viewBox", viewBox);
@@ -165,6 +304,7 @@ export async function POST(request: NextRequest) {
           label: id || `Symbol SVG ${counter}`,
           width,
           height,
+          parts: [],
         });
       });
 
@@ -172,8 +312,7 @@ export async function POST(request: NextRequest) {
       document
         .querySelectorAll('object[data$=".svg"], embed[src$=".svg"]')
         .forEach((el) => {
-          const src =
-            el.getAttribute("data") || el.getAttribute("src");
+          const src = el.getAttribute("data") || el.getAttribute("src");
           if (!src) return;
 
           results.push({
@@ -183,6 +322,7 @@ export async function POST(request: NextRequest) {
             label: getLabel(el) || `Object SVG ${counter}`,
             width: parseFloat(el.getAttribute("width") || "") || null,
             height: parseFloat(el.getAttribute("height") || "") || null,
+            parts: [],
           });
         });
 
@@ -201,6 +341,7 @@ export async function POST(request: NextRequest) {
               label: getLabel(el) || `Background SVG ${counter}`,
               width: null,
               height: null,
+              parts: [],
             });
           }
         }
@@ -260,8 +401,8 @@ export async function POST(request: NextRequest) {
     for (const svg of svgs) {
       if (!svg.content && externalSvgUrls[svg.id]) {
         try {
-          const response = await page.evaluate(async (url: string) => {
-            const res = await fetch(url);
+          const response = await page.evaluate(async (fetchUrl: string) => {
+            const res = await fetch(fetchUrl);
             return await res.text();
           }, externalSvgUrls[svg.id]);
 
@@ -276,7 +417,6 @@ export async function POST(request: NextRequest) {
 
     await browser.close();
 
-    // Filter out SVGs with no content
     const validSvgs = svgs.filter((svg) => svg.content.length > 0);
 
     return NextResponse.json({
