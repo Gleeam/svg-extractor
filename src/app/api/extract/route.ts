@@ -1,7 +1,31 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { NextRequest, NextResponse } from "next/server";
-import { chromium } from "playwright";
 
 export const maxDuration = 60;
+
+let cachedExecutablePath: string | null = null;
+let downloadPromise: Promise<string> | null = null;
+
+async function getChromiumPath(): Promise<string> {
+  if (cachedExecutablePath) return cachedExecutablePath;
+
+  if (!downloadPromise) {
+    const chromium = (await import("@sparticuz/chromium-min")).default;
+    const url = `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}/chromium-pack.tar`;
+    downloadPromise = chromium
+      .executablePath(url)
+      .then((path: string) => {
+        cachedExecutablePath = path;
+        return path;
+      })
+      .catch((error: Error) => {
+        downloadPromise = null;
+        throw error;
+      });
+  }
+
+  return downloadPromise;
+}
 
 interface SvgPart {
   id: string;
@@ -40,19 +64,34 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Invalid URL format" }, { status: 400 });
     }
 
-    browser = await chromium.launch({ headless: true });
-    const context = await browser.newContext({
-      userAgent:
-        "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
-    });
-    const page = await context.newPage();
+    const isVercel = !!process.env.VERCEL_ENV;
+    let puppeteer: any;
+    let launchOptions: any = { headless: true };
+
+    if (isVercel) {
+      const chromium = (await import("@sparticuz/chromium-min")).default;
+      puppeteer = await import("puppeteer-core");
+      launchOptions = {
+        ...launchOptions,
+        args: chromium.args,
+        executablePath: await getChromiumPath(),
+      };
+    } else {
+      puppeteer = await import("puppeteer");
+    }
+
+    browser = await puppeteer.launch(launchOptions);
+    const page = await browser.newPage();
+    await page.setUserAgent(
+      "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
+    );
 
     await page.goto(parsedUrl.toString(), {
-      waitUntil: "networkidle",
+      waitUntil: "networkidle0",
       timeout: 30000,
     });
 
-    await page.waitForTimeout(1500);
+    await new Promise((r) => setTimeout(r, 1500));
 
     const svgs: ExtractedSVG[] = await page.evaluate(() => {
       const results: ExtractedSVG[] = [];

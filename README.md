@@ -1,6 +1,6 @@
 # SVG Extractor
 
-Extract, preview, and download all SVG graphics from any website. Built with Next.js and Playwright.
+Extract, preview, and download all SVG graphics from any website. Built with Next.js and Puppeteer.
 
 **Live** &mdash; [svg.gleeam.dev](https://svg.gleeam.dev)
 
@@ -8,7 +8,7 @@ Extract, preview, and download all SVG graphics from any website. Built with Nex
 
 ## Features
 
-- **Full page scraping** &mdash; Extracts inline SVGs, `<img>` SVGs, `<symbol>` sprites, `<object>`/`<embed>`, and CSS background SVGs using headless Chromium via Playwright
+- **Full page scraping** &mdash; Extracts inline SVGs, `<img>` SVGs, `<symbol>` sprites, `<object>`/`<embed>`, and CSS background SVGs using headless Chromium via Puppeteer
 - **Individual parts** &mdash; Expand any inline SVG to see its child elements (paths, groups, shapes) and download them individually
 - **Bulk download** &mdash; Download all extracted SVGs as a single ZIP archive
 - **Copy to clipboard** &mdash; One-click copy of any SVG's source code
@@ -22,7 +22,7 @@ Extract, preview, and download all SVG graphics from any website. Built with Nex
 | Layer | Technology |
 |-------|-----------|
 | Framework | [Next.js 16](https://nextjs.org) (App Router, TypeScript) |
-| Scraping | [Playwright](https://playwright.dev) (headless Chromium) |
+| Scraping | [Puppeteer](https://pptr.dev) + [@sparticuz/chromium](https://github.com/Sparticuz/chromium) (headless Chromium) |
 | Styling | [Tailwind CSS 4](https://tailwindcss.com) |
 | UI | [shadcn/ui](https://ui.shadcn.com) components, [Radix UI](https://radix-ui.com) |
 | Animations | [Framer Motion](https://www.framer.com/motion) |
@@ -41,7 +41,6 @@ Extract, preview, and download all SVG graphics from any website. Built with Nex
 
 ```bash
 npm install
-npx playwright install chromium
 ```
 
 ### Development
@@ -67,7 +66,7 @@ src/
 │   ├── [locale]/
 │   │   ├── layout.tsx        # Fonts, theme, SEO metadata, i18n provider
 │   │   └── page.tsx
-│   ├── api/extract/route.ts  # Playwright SVG extraction endpoint
+│   ├── api/extract/route.ts  # Puppeteer SVG extraction endpoint
 │   ├── globals.css           # Design tokens (gleeam.dev theme)
 │   └── layout.tsx
 ├── components/
@@ -94,7 +93,7 @@ src/
 ## How It Works
 
 1. User submits a URL
-2. The API route launches a headless Chromium browser via Playwright
+2. The API route launches a headless Chromium browser via Puppeteer + @sparticuz/chromium
 3. The page is fully rendered (including JS-loaded content)
 4. A `page.evaluate()` script walks the DOM to find all SVGs:
    - Inline `<svg>` elements with computed styles inlined
