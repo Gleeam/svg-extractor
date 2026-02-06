@@ -88,6 +88,7 @@ export default async function LocaleLayout({
   params: Promise<{ locale: string }>;
 }) {
   const { locale } = await params;
+  const pirschCode = process.env.NEXT_PUBLIC_PIRSCH_CODE;
 
   if (!hasLocale(routing.locales, locale)) {
     notFound();
@@ -116,6 +117,14 @@ export default async function LocaleLayout({
           }}
         />
         <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+        {pirschCode ? (
+          <script
+            defer
+            src="https://api.pirsch.io/pa.js"
+            id="pianjs"
+            data-code={pirschCode}
+          />
+        ) : null}
       </head>
       <body className={`${inter.variable} ${dmSans.variable} font-sans`}>
         <NextIntlClientProvider messages={messages}>
