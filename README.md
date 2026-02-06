@@ -2,7 +2,7 @@
 
 Extract, preview, and download all SVG graphics from any website. Built with Next.js and Puppeteer.
 
-**Live** &mdash; [svg.gleeam.dev](https://svg.gleeam.dev)
+**Live** &mdash; [svgexport.gleeam.dev](https://svgexport.gleeam.dev)
 
 ---
 
