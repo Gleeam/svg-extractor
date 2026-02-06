@@ -1,8 +1,8 @@
 {
   "meta": {
-    "title": "SVG Extractor - Extraer y Descargar SVGs de Cualquier Sitio Web",
-    "description": "Herramienta online gratuita para extraer, previsualizar y descargar todos los iconos y graficos SVG de cualquier sitio web. Descarga individual o como archivo ZIP.",
-    "keywords": "extractor svg, descargar svg, extraer svg de sitio web, svg downloader, iconos svg, scraper svg"
+    "title": "Extractor SVG Gratis - Extraer y Descargar SVGs de Cualquier Sitio Web",
+    "description": "Herramienta online gratuita para extraer, previsualizar y descargar todos los archivos SVG (iconos, logos, ilustraciones) de cualquier sitio web. Descarga individual o como archivo ZIP. Exporta tambien las partes individuales de cada SVG.",
+    "keywords": "extractor svg, descargar svg, extraer svg de sitio web, svg downloader, iconos svg, scraper svg, herramienta svg gratis, extraer logo svg, descargar imagenes vectoriales, svg online, extraer iconos de sitio web, descargar svg gratis"
   },
   "hero": {
     "title": "Extraer SVGs de cualquier sitio web",
@@ -18,21 +18,18 @@
     "noneSub": "Prueba con otra URL o verifica que la pagina utilice graficos SVG.",
     "downloadAll": "Descargar todo como ZIP",
     "download": "Descargar",
-    "copy": "Copiar SVG",
-    "copied": "Copiado!",
-    "source": "Fuente",
     "inline": "En linea",
     "img": "Imagen",
     "background": "Fondo",
     "object": "Objeto",
     "symbol": "Simbolo",
-    "dimensions": "{w} x {h}",
-    "preview": "Vista previa",
     "parts": "{count} partes individuales"
   },
   "footer": {
     "built": "Creado por",
-    "description": "Herramienta gratuita y de codigo abierto para extraccion de SVG"
+    "description": "Herramienta gratuita y de codigo abierto para extraccion de SVG",
+    "reportBug": "Reportar un bug",
+    "sourceCode": "Codigo fuente"
   },
   "errors": {
     "invalid_url": "Por favor, introduce una URL valida",
@@ -40,7 +37,6 @@
     "generic": "Algo salio mal. Por favor, intentalo de nuevo."
   },
   "language": {
-    "label": "Idioma",
     "en": "Ingles",
     "fr": "Frances",
     "es": "Espanol"

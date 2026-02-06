@@ -1,8 +1,8 @@
 {
   "meta": {
-    "title": "SVG Extractor - Extraire et Telecharger les SVG de n'importe quel site",
-    "description": "Outil en ligne gratuit pour extraire, visualiser et telecharger tous les SVG (icones et graphiques) de n'importe quel site web. Telechargement individuel ou en archive ZIP.",
-    "keywords": "extracteur svg, telecharger svg, extraire svg site web, svg downloader, icones svg, scraper svg"
+    "title": "Extracteur SVG gratuit - Extraire et telecharger les SVG de n'importe quel site web",
+    "description": "Outil en ligne gratuit pour extraire, previsualiser et telecharger tous les fichiers SVG (icones, logos, illustrations) de n'importe quel site web. Telechargez chaque SVG individuellement ou en archive ZIP. Exportez aussi les parties individuelles de chaque SVG.",
+    "keywords": "extracteur svg, extraire svg site web, telecharger svg, telecharger icones svg, recuperer svg d'un site, outil extraction svg gratuit, svg downloader, extraire logo svg, extraire icones site web, telecharger images vectorielles, svg en ligne, outil svg gratuit"
   },
   "hero": {
     "title": "Extraire les SVG de n'importe quel site",
@@ -18,21 +18,18 @@
     "noneSub": "Essayez une autre URL ou verifiez que la page utilise des graphiques SVG.",
     "downloadAll": "Tout telecharger en ZIP",
     "download": "Telecharger",
-    "copy": "Copier le SVG",
-    "copied": "Copie !",
-    "source": "Source",
     "inline": "En ligne",
     "img": "Image",
     "background": "Arriere-plan",
     "object": "Objet",
     "symbol": "Symbole",
-    "dimensions": "{w} x {h}",
-    "preview": "Apercu",
     "parts": "{count} parties individuelles"
   },
   "footer": {
     "built": "Cree par",
-    "description": "Outil gratuit et open-source d'extraction de SVG"
+    "description": "Outil gratuit et open-source d'extraction de SVG",
+    "reportBug": "Signaler un bug",
+    "sourceCode": "Code source"
   },
   "errors": {
     "invalid_url": "Veuillez entrer une URL valide",
@@ -40,7 +37,6 @@
     "generic": "Une erreur est survenue. Veuillez reessayer."
   },
   "language": {
-    "label": "Langue",
     "en": "Anglais",
     "fr": "Francais",
     "es": "Espagnol"

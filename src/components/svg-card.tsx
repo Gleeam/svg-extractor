@@ -5,24 +5,10 @@ import { Download, Copy, Check, ChevronDown, Layers } from "lucide-react";
 import { useState } from "react";
 import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
-
-interface SvgPart {
-  id: string;
-  content: string;
-  tag: string;
-  label: string;
-}
+import type { ExtractedSVG } from "@/lib/types";
 
 interface SvgCardProps {
-  svg: {
-    id: string;
-    content: string;
-    source: string;
-    label: string;
-    width: number | null;
-    height: number | null;
-    parts: SvgPart[];
-  };
+  svg: ExtractedSVG;
   index: number;
 }
 

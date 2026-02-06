@@ -118,38 +118,117 @@ export async function POST(request: NextRequest) {
         return svgString.replace(/currentColor/gi, color);
       }
 
+      const NAMED_COLORS = new Set([
+        "black","white","red","green","blue","yellow","orange","purple","pink",
+        "gray","grey","cyan","magenta","navy","teal","maroon","olive","silver",
+        "aqua","fuchsia","lime","indigo","violet","gold","coral","salmon","tomato",
+        "wheat","beige","ivory","linen","snow","plum","orchid","peru","sienna",
+        "tan","thistle","turquoise","crimson","khaki","lavender","chocolate",
+        "azure","bisque","brown","burlywood","chartreuse","cornsilk","firebrick",
+        "gainsboro","honeydew","hotpink","lawngreen","limegreen","mintcream",
+        "moccasin","oldlace","orangered","papayawhip","peachpuff","powderblue",
+        "rosybrown","royalblue","sandybrown","seagreen","seashell","skyblue",
+        "slateblue","slategray","slategrey","springgreen","steelblue","yellowgreen",
+        "aliceblue","antiquewhite","blanchedalmond","blueviolet","cadetblue",
+        "cornflowerblue","darkblue","darkcyan","darkgoldenrod","darkgray","darkgrey",
+        "darkgreen","darkkhaki","darkmagenta","darkolivegreen","darkorange",
+        "darkorchid","darkred","darksalmon","darkseagreen","darkslateblue",
+        "darkslategray","darkslategrey","darkturquoise","darkviolet","deeppink",
+        "deepskyblue","dimgray","dimgrey","dodgerblue","floralwhite","forestgreen",
+        "ghostwhite","goldenrod","greenyellow","indianred","lemonchiffon",
+        "lightblue","lightcoral","lightcyan","lightgoldenrodyellow","lightgray",
+        "lightgrey","lightgreen","lightpink","lightsalmon","lightseagreen",
+        "lightskyblue","lightslategray","lightslategrey","lightsteelblue",
+        "lightyellow","mediumaquamarine","mediumblue","mediumorchid","mediumpurple",
+        "mediumseagreen","mediumslateblue","mediumspringgreen","mediumturquoise",
+        "mediumvioletred","midnightblue","mistyrose","navajowhite","olivedrab",
+        "palegoldenrod","palegreen","paleturquoise","palevioletred","rebeccapurple",
+        "saddlebrown",
+      ]);
+
+      function isValidSvgColor(value: string): boolean {
+        const v = value.trim();
+        if (!v) return false;
+        if (/^#[0-9a-f]{3,8}$/i.test(v)) return true;
+        if (/^(?:rgb|rgba|hsl|hsla)\(/i.test(v)) return true;
+        if (/^(?:none|transparent|inherit)$/i.test(v)) return true;
+        if (/^url\(/i.test(v)) return true;
+        if (NAMED_COLORS.has(v.toLowerCase())) return true;
+        return false;
+      }
+
+      // Sanitize the final SVG string: replace any invalid color values with #000000
+      const COLOR_ATTRS = ["fill", "stroke", "color", "stop-color", "flood-color", "lighting-color"];
+
+      function sanitizeColors(svgString: string): string {
+        // 1. Direct attributes: fill="var(--x)" or fill="something-invalid"
+        let result = svgString.replace(
+          new RegExp(`((?:${COLOR_ATTRS.join("|")})=")([^"]*)(")`, "g"),
+          (match, pre: string, val: string, post: string) => {
+            if (isValidSvgColor(val)) return match;
+            return `${pre}#000000${post}`;
+          }
+        );
+        // 2. Inside style="..." attributes
+        result = result.replace(
+          /style="([^"]*)"/g,
+          (match, content: string) => {
+            const fixed = content.replace(
+              new RegExp(`((?:${COLOR_ATTRS.join("|")})\\s*:\\s*)([^;\"]+)`, "g"),
+              (propMatch, prefix: string, val: string) => {
+                if (isValidSvgColor(val)) return propMatch;
+                return `${prefix}#000000`;
+              }
+            );
+            return `style="${fixed}"`;
+          }
+        );
+        return result;
+      }
+
       // Inline computed fill/stroke on elements that rely on page CSS.
       // This makes the SVG self-contained when copied standalone.
       const VISUAL_PROPS = ["fill", "stroke"] as const;
 
-      function inlineComputedStyles(root: Element): Array<{ el: Element; prop: string }> {
-        const restored: Array<{ el: Element; prop: string }> = [];
+      function inlineComputedStyles(root: Element): Array<{ el: Element; prop: string; orig: string | null }> {
+        const restored: Array<{ el: Element; prop: string; orig: string | null }> = [];
         const selector = "path, circle, rect, line, polygon, polyline, ellipse, text, use, g";
         const els = root.matches?.(selector) ? [root, ...root.querySelectorAll(selector)] : root.querySelectorAll(selector);
 
         els.forEach((el) => {
           const computed = window.getComputedStyle(el);
           for (const prop of VISUAL_PROPS) {
-            // Skip if already has an explicit attribute or inline style
-            if (el.hasAttribute(prop)) continue;
-            if ((el as HTMLElement).style?.getPropertyValue(prop)) continue;
+            const existing = el.getAttribute(prop);
+
+            // If element already has a valid value, leave it alone
+            if (existing && isValidSvgColor(existing)) continue;
 
             const val = computed.getPropertyValue(prop);
-            if (!val || val === "none" || val === "") continue;
+            if (!val || val === "" ) continue;
 
-            // Convert rgb(...) to hex for cleaner output
-            const resolved = val.startsWith("rgb") ? rgbToHex(val) : val;
+            let resolved: string;
+            if (val === "none") {
+              resolved = "none";
+            } else if (val.startsWith("rgb")) {
+              resolved = rgbToHex(val);
+            } else if (isValidSvgColor(val)) {
+              resolved = val;
+            } else {
+              resolved = "#000000";
+            }
+
             el.setAttribute(prop, resolved);
-            restored.push({ el, prop });
+            restored.push({ el, prop, orig: existing });
           }
         });
 
         return restored;
       }
 
-      function restoreInlinedStyles(restored: Array<{ el: Element; prop: string }>) {
-        for (const { el, prop } of restored) {
-          el.removeAttribute(prop);
+      function restoreInlinedStyles(restored: Array<{ el: Element; prop: string; orig: string | null }>) {
+        for (const { el, prop, orig } of restored) {
+          if (orig === null) el.removeAttribute(prop);
+          else el.setAttribute(prop, orig);
         }
       }
 
@@ -204,7 +283,7 @@ export async function POST(request: NextRequest) {
           const childRestored = inlineComputedStyles(child);
           const serialized = new XMLSerializer().serializeToString(child);
           restoreInlinedStyles(childRestored);
-          const resolved = resolveCurrentColor(serialized, resolvedColor);
+          const resolved = sanitizeColors(resolveCurrentColor(serialized, resolvedColor));
           const content = wrapInSvg(resolved, viewBox, defs);
 
           const label =
@@ -256,7 +335,7 @@ export async function POST(request: NextRequest) {
         restoreInlinedStyles(restored);
         if (origWidth === null) el.removeAttribute("width"); else el.setAttribute("width", origWidth);
         if (origHeight === null) el.removeAttribute("height"); else el.setAttribute("height", origHeight);
-        return resolveCurrentColor(raw, resolvedColor);
+        return sanitizeColors(resolveCurrentColor(raw, resolvedColor));
       }
 
       // 1. Inline <svg> elements

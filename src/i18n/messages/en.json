@@ -1,8 +1,8 @@
 {
   "meta": {
-    "title": "SVG Extractor - Extract & Download SVGs from Any Website",
-    "description": "Free online tool to extract, preview and download all SVG icons and graphics from any website. Download individually or as a ZIP archive.",
-    "keywords": "svg extractor, download svg, extract svg from website, svg downloader, svg icons, web scraper svg"
+    "title": "Free SVG Extractor - Extract & Download SVGs from Any Website",
+    "description": "Free online tool to extract, preview and download all SVG files (icons, logos, illustrations) from any website. Download each SVG individually or as a ZIP archive. Export individual parts of each SVG.",
+    "keywords": "svg extractor, download svg, extract svg from website, svg downloader, svg icons, web scraper svg, free svg tool, extract logo svg, download vector images, svg online tool, extract icons from website, svg grabber, bulk svg download"
   },
   "hero": {
     "title": "Extract SVGs from any website",
@@ -18,21 +18,18 @@
     "noneSub": "Try a different URL or check that the page uses SVG graphics.",
     "downloadAll": "Download all as ZIP",
     "download": "Download",
-    "copy": "Copy SVG",
-    "copied": "Copied!",
-    "source": "Source",
     "inline": "Inline",
     "img": "Image",
     "background": "Background",
     "object": "Object",
     "symbol": "Symbol",
-    "dimensions": "{w} x {h}",
-    "preview": "Preview",
     "parts": "{count} individual parts"
   },
   "footer": {
     "built": "Built by",
-    "description": "Free & open-source SVG extraction tool"
+    "description": "Free & open-source SVG extraction tool",
+    "reportBug": "Report a bug",
+    "sourceCode": "Source code"
   },
   "errors": {
     "invalid_url": "Please enter a valid URL",
@@ -40,7 +37,6 @@
     "generic": "Something went wrong. Please try again."
   },
   "language": {
-    "label": "Language",
     "en": "English",
     "fr": "French",
     "es": "Spanish"

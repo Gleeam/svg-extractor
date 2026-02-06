@@ -33,11 +33,21 @@ export async function generateMetadata({
 
   const baseUrl = "https://svg.gleeam.dev";
 
+  const ogLocaleMap: Record<string, string> = {
+    en: "en_US",
+    fr: "fr_FR",
+    es: "es_ES",
+  };
+
   return {
     title: t("title"),
     description: t("description"),
     keywords: t("keywords"),
     metadataBase: new URL(baseUrl),
+    applicationName: "SVG Extractor",
+    authors: [{ name: "Gleeam", url: "https://gleeam.dev" }],
+    creator: "Gleeam",
+    publisher: "Gleeam",
     alternates: {
       canonical: `/${locale}`,
       languages: {
@@ -51,7 +61,7 @@ export async function generateMetadata({
       description: t("description"),
       url: `${baseUrl}/${locale}`,
       siteName: "SVG Extractor",
-      locale: locale,
+      locale: ogLocaleMap[locale] || locale,
       type: "website",
     },
     twitter: {

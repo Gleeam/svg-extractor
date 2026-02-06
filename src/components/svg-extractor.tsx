@@ -2,7 +2,7 @@
 
 import { useState, type FormEvent } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Search, Download, PackageOpen, AlertCircle } from "lucide-react";
+import { Search, Download, PackageOpen, AlertCircle, Github, Mail } from "lucide-react";
 import { useTranslations } from "next-intl";
 import JSZip from "jszip";
 import { Button } from "@/components/ui/button";
@@ -10,23 +10,7 @@ import { ThemeToggle } from "@/components/theme-toggle";
 import { LanguageSwitcher } from "@/components/language-switcher";
 import { SvgCard } from "@/components/svg-card";
 import { LoadingAnimation } from "@/components/loading-animation";
-
-interface SvgPart {
-  id: string;
-  content: string;
-  tag: string;
-  label: string;
-}
-
-interface ExtractedSVG {
-  id: string;
-  content: string;
-  source: string;
-  label: string;
-  width: number | null;
-  height: number | null;
-  parts: SvgPart[];
-}
+import type { ExtractedSVG } from "@/lib/types";
 
 export function SvgExtractor() {
   const t = useTranslations();
@@ -302,7 +286,7 @@ export function SvgExtractor() {
 
       {/* Footer */}
       <footer className="border-t border-border py-6">
-        <div className="mx-auto max-w-6xl px-4 sm:px-6 flex flex-col sm:flex-row items-center justify-between gap-2 text-sm text-muted-foreground">
+        <div className="mx-auto max-w-6xl px-4 sm:px-6 flex flex-col sm:flex-row items-center justify-between gap-4 text-sm text-muted-foreground">
           <p>
             {t("footer.built")}{" "}
             <a
@@ -313,8 +297,27 @@ export function SvgExtractor() {
             >
               Gleeam
             </a>
+            {" "}&mdash;{" "}
+            {t("footer.description")}
           </p>
-          <p>{t("footer.description")}</p>
+          <div className="flex items-center gap-4">
+            <a
+              href="mailto:contact@gleeam.dev"
+              className="flex items-center gap-1.5 text-muted-foreground hover:text-foreground transition-colors"
+            >
+              <Mail className="h-3.5 w-3.5" />
+              {t("footer.reportBug")}
+            </a>
+            <a
+              href="https://github.com/Gleeam/svg-extractor"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center gap-1.5 text-muted-foreground hover:text-foreground transition-colors"
+            >
+              <Github className="h-3.5 w-3.5" />
+              {t("footer.sourceCode")}
+            </a>
+          </div>
         </div>
       </footer>
     </div>
