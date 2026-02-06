@@ -26,7 +26,7 @@
     "parts": "{count} parties individuelles"
   },
   "footer": {
-    "built": "Cree par",
+    "built": "Créé par",
     "description": "Outil gratuit et open-source d'extraction de SVG",
     "reportBug": "Signaler un bug",
     "sourceCode": "Code source"

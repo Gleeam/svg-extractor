@@ -130,14 +130,14 @@ export function SvgExtractor() {
         </div>
       </header>
 
-      <main className="flex-1">
-        {/* Hero section */}
-        <section className="relative overflow-hidden">
-          {/* Background glow */}
-          <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
-            <div className="h-[400px] w-[600px] rounded-full bg-accent/5 blur-[120px]" />
-          </div>
+      <main className="relative flex-1 overflow-hidden">
+        {/* Background glow */}
+        <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
+          <div className="h-[400px] w-[600px] rounded-full bg-accent/5 blur-[120px]" />
+        </div>
 
+        {/* Hero section */}
+        <section className="relative">
           <div className="relative mx-auto max-w-3xl px-4 pt-16 pb-12 sm:px-6 sm:pt-24 sm:pb-16 text-center">
             <motion.h1
               initial={{ opacity: 0, y: 20 }}
